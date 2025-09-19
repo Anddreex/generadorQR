@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Generador de QR — Personalizado</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Librería: qr-code-styling (CDN estable) -->
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+  <style>
+    /* 🎨 Estilo moderno y responsive para el generador QR */
+
+/* Fuente Inter */
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  min-height: 100vh;
+}
+
+.app {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Titulares */
+h1 {
+  margin: 0 0 14px 0;
+  font-size: clamp(22px, 2.5vw, 34px);
+  font-weight: 800;
+  text-align: center;
+  color: #fbbf24;
+}
+
+/* Cards */
+.card {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Panel de controles */
+.panel {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+}
+
+.panel .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel label {
+  font-size: 12px;
+  color: #d1d5db;
+}
+
+.panel input[type="text"],
+.panel input[type="url"],
+
+.panel input[type="file"],
+.panel select,
+.panel input[type="range"] {
+  padding: 15px 12px;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  outline: none;
+  background: #111827;
+  color: #f9fafb;
+}
+
+.panel input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+}
+
+/* Webkit (Chrome, Edge, Safari) */
+.panel input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.panel input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+/* Firefox */
+.panel input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+.panel input[type="file"] {
+  padding: 6px;
+}
+
+.panel .actions {
+  display: flex;
+  gap: 10px;
+  grid-column: 1/-1;
+  justify-content: center;
+}
+
+/* Botones */
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  color: white;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.45);
+}
+
+.btn.secondary {
+  background: #111827;
+  box-shadow: none;
+}
+
+/* Stage: QR + info */
+.stage {
+display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Tarjeta del QR */
+.qr-card {
+  position: relative;
+  background: #0f172a;
+  border-radius: 28px;
+  border: 10px solid #f59e0b;
+  padding: 20px;
+
+  display: flex;              /* 🔥 en lugar de inline-block */
+  flex-direction: column;     /* QR arriba, texto abajo */
+  align-items: center;        /* centra horizontal */
+  justify-content: center;    /* centra vertical */
+
+  justify-self: center;
+  animation: fadeIn 0.4s ease;
+}
+
+#qr {
+  width: 320px;
+  height: 320px;
+   
+}
+
+/* Barra inferior */
+.scan-bar {
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: #f59e0b;
+  color: #fff;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 12px 8px;
+  border-radius: 0 0 18px 18px;
+  font-size: 22px;
+}
+
+/* Tips */
+.tip {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive */
+@media (min-width: 900px) {
+  .stage {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+@media (max-width: 899px) {
+  .panel {
+    grid-template-columns: 1fr;
+  }
+  .stage {
+    grid-template-columns: 1fr;
+  }
+  .qr-card {
+    justify-self: stretch;
+  }
+  #qr {
+    width: 100%;
+    height: auto;
+    min-height: 300px;
+    
+  }
+}
+/* Alinear mejor los campos */
+.panel {
+  align-items: start;
+}
+
+/* Mejorar estilo del input file */
+input[type="file"] {
+  color: #d1d5db; /* texto gris claro */
+  font-size: 14px;
+}
+
+input[type="file"]::file-selector-button {
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 08px 14px;
+  margin-right: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: linear-gradient(90deg, #fbbf24, #f87171);
+  transform: translateY(-2px);
+}
+
+.panel .field.url-field {
+  grid-column: 1 / -1; /* ocupa ambas columnas en la fila 1 */
+}
+
+/* 2) Forzar posición del nuevo control: fila 2, columna 2 (al lado de los colores) */
+#eyeStyleContainer {
+  grid-column: 2;  /* columna derecha */
+  grid-row: 2;     /* fila 2 (debajo de la URL) */
+  align-self: start;
+}
+
+/* 3) Estilo del select para que coincida con el resto */
+#eyeStyleContainer label {
+  color: #d1d5db;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 6px;
+}
+#eyeStyleContainer select {
+  width: 100%;
+  padding: 13px 12px;
+  border-radius: 10px;
+  border: 1px solid #374151;
+  background: #0f172a;
+  color: #f9fafb;
+  font-size: 14px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Generador de Código QR</h1>
+
+    <div class="panel" id="controls">
+      <div class="field url-field">
+  <label for="data">Contenido del QR (URL o texto)</label>
+  <input id="data" type="text" value="" />
+</div>
+
+      <div class="field">
+        <label for="logo">Logo </label>
+        <input id="logo" type="file" accept="image/*" />
+
+      </div>
+      <div class="field">
+        <label for="dotColor">Color de puntos</label>
+        <input id="dotColor" type="color" value="#f59e0b" />
+      </div>
+      <div class="field">
+    <label for="dotStyle">Estilo de puntos</label>
+    <select id="dotStyle">
+    <option value="dots">Dots</option>
+    <option value="square">Square</option>
+    <option value="rounded">Rounded</option>
+    <option value="extra-rounded">Extra Rounded</option>
+    <option value="classy">Classy</option>
+    <option value="classy-rounded">Classy Rounded</option>
+  </select>
+    </div>
+
+      <div class="field">
+        <label for="bgColor">Color de fondo</label>
+        <input id="bgColor" type="color" value="#0a0a0a" />
+      </div>
+      
+  <!--si sale mas cambiar-->   
+  <div id="eyeStyleContainer">
+  <label for="eyeStyle">Estilo de ojos</label>
+  <select id="eyeStyle">
+    <option value="square">Cuadrado</option>
+    <option value="rounded">Redondeado</option>
+    <option value="extra-rounded">Extra redondeado</option>
+    <option value="dot">Puntos (dot)</option>
+    </select>
+</div>
+
+
+
+      <div class="field">
+    <label for="barText">Texto de la barra</label>
+     <input id="barText" type="text" value="SCAN ME" />
+        </div>
+
+      <div class="actions">
+        <button class="btn" id="generate">Generar / Actualizar</button>
+        <button class="btn secondary" id="downloadPng">Descargar PNG</button>
+        <button class="btn secondary" id="downloadSvg">Descargar SVG</button>
+      </div>
+    </div>
+
+
+    <div class="stage">
+      <div class="qr-card">
+        <div id="qr"></div>
+        <div class="scan-bar">SCAN ME</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Comprobación básica de carga de la librería
+    if (typeof QRCodeStyling === 'undefined') {
+      alert('No se pudo cargar la librería QR. Revisa tu conexión o el bloqueador de scripts.');
+    }
+
+    const qr = new QRCodeStyling({
+      width: 320,
+      height: 320,
+      type: 'svg',
+      data: document.getElementById('data').value,
+      image: undefined, // se establecerá si el usuario carga un logo
+      qrOptions: {
+        errorCorrectionLevel: 'Q' // robusto para logo
+      },
+      dotsOptions: {
+        color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#f59e0b',
+        type: 'dots'
+      },
+      backgroundOptions: {
+        color: getComputedStyle(document.documentElement).getPropertyValue('--dark').trim() || '#0a0a0a'
+      },
+      cornersSquareOptions: {
+        type: 'extra-rounded',
+        color: '#f59e0b'
+      },
+      cornersDotOptions: {
+        type: 'dot',
+        color: '#f59e0b'
+      },
+      imageOptions: {
+        crossOrigin: 'anonymous',
+        margin: 6,
+        imageSize: 0.55,           // ~35% del área
+        hideBackgroundDots: true   // mejora contraste tras el logo
+      }
+    });
+
+    const mount = document.getElementById('qr');
+    qr.append(mount);
+
+    // Controles
+    const dataInput = document.getElementById('data');
+    const dotColor = document.getElementById('dotColor');
+    const bgColor = document.getElementById('bgColor');
+    const logoInput = document.getElementById('logo');
+    const dotStyle = document.getElementById('dotStyle');
+    const barText = document.getElementById('barText');
+    const scanBar = document.querySelector('.scan-bar');
+    const eyeStyle = document.getElementById('eyeStyle');
+
+    dotStyle.addEventListener('change', () => {
+  qr.update({
+    dotsOptions: { color: dotColor.value, type: dotStyle.value },
+    backgroundOptions: { color: bgColor.value },
+    cornersSquareOptions: { type: 'extra-rounded', color: dotColor.value },
+    cornersDotOptions: { type: 'dot', color: dotColor.value }
+    });
+});
+
+eyeStyle.addEventListener('change', () => {
+  const val = eyeStyle.value;
+  // cornersSquareOptions controla los "ojos grandes", cornersDotOptions los puntos de las esquinas internas
+  qr.update({
+    cornersSquareOptions: { type: val, color: dotColor.value },
+    cornersDotOptions: { type: val, color: dotColor.value }
+  });
+});
+
+function updateQR() {
+  qr.update({
+    data: dataInput.value || '',
+    dotsOptions: { color: dotColor.value, type: dotStyle.value },
+    backgroundOptions: { color: bgColor.value },
+    cornersSquareOptions: { type: eyeStyle.value, color: dotColor.value },
+    cornersDotOptions: { type: 'dot', color: dotColor.value }
+  });
+  scanBar.textContent = barText.value || 'SCAN ME';
+}
+
+// 🔹 Botón de generar
+document.getElementById('generate').addEventListener('click', updateQR);
+
+// 🔹 Botón PNG
+document.getElementById('downloadPng').addEventListener('click', () => {
+  updateQR(); 
+  let name = prompt("Escribe el nombre del archivo:", "qr-personalizado");
+  if (!name) name = "qr-personalizado"; // si cancelan o dejan vacío
+  qr.download({ name: name, extension: 'png' });
+});
+
+// 🔹 Botón SVG
+document.getElementById('downloadSvg').addEventListener('click', () => {
+  updateQR(); 
+  let name = prompt("Escribe el nombre del archivo:", "qr-personalizado");
+  if (!name) name = "qr-personalizado";
+  qr.download({ name: name, extension: 'svg' });
+});
+
+    // Cargar logo local de forma segura (DataURL evita CORS)
+    logoInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        qr.update({ image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>
